@@ -1,0 +1,32 @@
+﻿/* 
+
+	TableCloth	
+	by Alen Grakalic, brought to you by cssglobe.com
+	
+*/
+
+/* general styles */
+
+table, td{
+	font:100% Arial, Helvetica, sans-serif; 
+}
+#scrollTab{width:100%;border-collapse:collapse;margin:1em 0;}
+#scrollTab th, #scrollTab td{text-align:center;padding:.5em;border:1px solid #fff;}
+#scrollTab th{background:#328aa4 url(tr_back.gif) repeat-x;color:#fff;}
+#scrollTab td{background:#e5f1f4;}
+
+/* tablecloth styles */
+
+#scrollTab tr.even td{background:#e5f1f4;}
+#scrollTab tr.odd td{background:#f8fbfc;}
+
+#scrollTab th.over, #scrollTab tr.even th.over, #scrollTab tr.odd th.over{background:#4a98af;}
+#scrollTab th.down, #scrollTab tr.even th.down, #scrollTab tr.odd th.down{background:#bce774;}
+#scrollTab th.selected, #scrollTab tr.even th.selected, #scrollTab tr.odd th.selected{}
+
+#scrollTab td.over, #scrollTab tr.even td.over, #scrollTab tr.odd td.over{background:#ecfbd4;}
+#scrollTab td.down, #scrollTab tr.even td.down, #scrollTab tr.odd td.down{background:#bce774;color:#fff;}
+#scrollTab td.selected, #scrollTab tr.even td.selected, #scrollTab tr.odd td.selected{background:#bce774;color:#555;}
+
+/* use this if you want to apply different styleing to empty table cells*/
+#scrollTab td.empty, #scrollTab tr.odd td.empty, #scrollTab tr.even td.empty{background:#fff;}

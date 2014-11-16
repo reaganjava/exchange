@@ -1,0 +1,33 @@
+.ctab {
+	font-size: 13px;
+	white-space: nowrap;
+	border: solid 1px #000000;
+	border-collapse: collapse;
+}
+
+.ctab tr {
+	height: 20px;
+}
+
+.ctab th, .ctab .thCol, .ctab .thRow {
+  	padding-top:4px;
+	padding-bottom:2px;
+	background: #DFE8F6;
+	border: solid 1px #99BBE8;
+	font-family: "宋体";
+	font-weight: normal;
+}
+
+.ctab td {
+	border: inset 1px #99BBE8;
+	padding-left: 4px;
+	word-break: break-all;
+}
+
+.ctab .thColSplit, .ctab .tcrC, .ctab .tcrCR {
+	border-left: solid 2px #99BBE8;
+}
+
+.ctab .thRowSplit, .ctab .tcrR, .ctab .tcrCR {
+	border-top: solid 2px #99BBE8;
+}

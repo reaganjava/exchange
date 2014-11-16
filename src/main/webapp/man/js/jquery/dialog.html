@@ -1,0 +1,49 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>jQuery EasyUI</title>
+	<link rel="stylesheet" type="text/css" href="./themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="./themes/icon.css">
+	<script type="text/javascript" src="./jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="./jquery.easyui.min.js"></script>
+	<script>
+		$(function(){
+			$('#dd').dialog({
+				title:'My Dialog',
+				iconCls:'icon-ok',
+				toolbar:[{
+					text:'Add',
+					iconCls:'icon-add',
+					handler:function(){
+						alert('add')
+					}
+				},'-',{
+					text:'Save',
+					iconCls:'icon-save',
+					handler:function(){
+						alert('save')
+					}
+				}],
+				buttons:[{
+					text:'Ok',
+					iconCls:'icon-ok',
+					handler:function(){
+						alert('ok');
+					}
+				},{
+					text:'Cancel',
+					handler:function(){
+						$('#dd').dialog('close');
+					}
+				}]
+			});
+		});
+	</script>
+</head>
+<body>
+	<h1>Dialog</h1>
+	<div id="dd" style="padding:5px;width:400px;height:200px;">
+		Dialog Content.
+	</div>
+</body>
+</html>

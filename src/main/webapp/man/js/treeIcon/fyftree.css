@@ -1,0 +1,13 @@
+@CHARSET "UTF-8";
+
+.myTreeClass
+{
+	font-size: 12px;text-decoration:none;color:#000000;
+}
+
+img{
+vertical-align:bottom; 
+}
+
+a{font-size: 12px;text-decoration:none;color:#0000dd;}
+a:hover{color:#0000ff;text-decoration:underline;}

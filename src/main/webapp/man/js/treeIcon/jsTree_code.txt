@@ -1,0 +1,1191 @@
+//**********对外使用的API **********//
+
+function g(id) // 用来替代doucument.getElementById
+{
+	var res=null;
+	try{
+		res=document.getElementById(id);
+		if(res==null){
+			alert("id:"+id+"找不到对应的对象");
+			return null;
+		}
+	}catch(ex){
+		alert(ex);
+	}
+	return res;
+}
+
+function getAllTrees()
+{
+	return MyTrees;
+}
+
+function getTreeByDivId(divid)// 通过divid 来获得渲染这个div的树
+{
+	for(var i=0;i<MyTrees.size;++i)
+	{
+		var tr=MyTrees.get(i);
+		if(tr.div.id==divid)
+		{
+			return tr;
+		}
+	}
+	alert("找不到divID为"+divid+"的树!");
+	return null;
+}
+
+function getNodeById(nid) //从所有树环境中找这个节点
+{
+	for(var i=0;i<MyTrees.size;++i)
+	{
+		var tr=MyTrees.get(i);
+		var temNode=tr.hash[nid];
+		if(temNode!=null)
+		{
+			return temNode;
+		}
+	}
+	return null;
+}
+
+function checkCbo(node)
+{
+	if(node.hasCheckBox)
+	{
+		checkTheBox(node,true);
+		selectBoxByNode(node);
+	}
+}
+
+
+
+function checkCboById(nodeid)
+{
+	var node=getNodeById(nodeid);
+	if(node!=null)
+	{
+		checkCbo(node);
+	}
+}
+
+function cancelCbo(node)
+{
+	if(node.hasCheckBox)
+	{
+		checkTheBox(node,false);
+		deleteBoxByNode(node);
+	}
+}
+
+function cancelCboById(nid)
+{
+	var node=getNodeById(nid);
+	if(node!=null)
+	{
+		cancelCbo(node);
+	}
+}
+
+
+function closeThis(node)
+{
+	if(node.isClosed==false)
+	{
+		closeNode(node);
+	}
+}
+
+function openThis(node)
+{
+	if(node.isClosed==true)
+	{
+		openNode(node);
+	}
+}
+
+function closeNodeById(nid)
+{
+	var node=getNodeById(nid);
+	if(node!=null)
+	{
+		closeThis(node);
+	}
+}
+
+function openNodeById(nid)
+{
+	var node=getNodeById(nid);
+	if(node!=null)
+	{
+		openThis(node);
+	}
+}
+
+
+
+
+//**********上面的对外使用的API **********//
+
+  function isFF()
+  {
+  	try{
+	  	var tem=navigator.appName;//
+	  	if(tem=="Netscape")
+	  	{
+	  		return true;
+	  	}
+	  	return false;
+  	}catch(ex){}
+  	return false;
+  }
+
+function ArrayList()
+{
+	this.arr=new Array();
+	this.size=0;
+	
+	this.add=function(obj)
+	{
+		this.arr[this.size]=obj;
+		++this.size;
+	}
+	
+	this.get=function(idx)
+	{
+		if(idx<0||idx>=this.size)
+		{
+			alert("ArrayList: ADD > index out of bounds");
+			return null;
+		}
+		return this.arr[idx];
+	}
+	
+	this.set=function(idx,node)
+	{
+		if(idx<0||idx>=this.size)
+		{
+			alert("ArrayList: SET > index out of bounds");
+			return null;
+		}
+		this.arr[idx]=node;
+	}
+	
+	this.rmId=function(idx)
+	{
+		if(idx<0||idx>=this.size)
+		{
+			alert("ArrayList: RMID > index out of bounds");
+			return null;
+		}
+		var num=parseInt(idx);
+		if(num!=idx)
+		{
+			alert("ArrayList: RM > index not a number");
+			return null;
+		}
+		var res=this.arr[idx];
+		for(var i=idx;i<this.size-1;++i)
+		{
+			this.arr[i]=this.arr[i+1];
+		}
+		this.arr[this.size-1]=null;
+		
+		--this.size;
+		
+		return res;
+	}
+	
+	this.rm=function(obj)
+	{
+		
+		for(var i=0;i<this.size;++i)
+		{
+			
+			if(this.arr[i]==obj)
+			{
+				 return this.rmId(i);
+			}
+		}
+		return null;
+	}
+	
+	
+	this.show=function()
+	{
+		var str="";
+		for(var i=0;i<this.size;++i)
+		{
+			str+=this.arr[i]+"\r\n";
+		}
+		alert(str+"size="+this.size);
+	}
+}
+
+
+var MyTrees=new ArrayList();
+
+
+
+
+function JsTree(divid)
+{
+	this.hash=new Array(); // 存放所有的节点
+	this.hashKey=new ArrayList(); // 存放所有的节点 Id
+	
+	this.iconPath="treeIcon";
+	this.id=null;
+	this.text=null;
+	this.root=null;
+	this.div=g(divid);
+	this.table=null;// <table>对象
+	this.ieIsFF=isFF();
+	
+	
+	var hasThisDiv=treesHaveDivId(divid);
+	
+	if(hasThisDiv==-1)
+	{
+		MyTrees.add(this);
+	}else
+	{
+		MyTrees.set(hasThisDiv,this);
+	}
+	
+	this.setRoot=function(r) /// 核心方法
+	{
+		if(this.root!=null)
+		{
+			alert("已经有root:"+this.root.id);
+			return;
+		}
+		
+		var bool=checkNode(r);
+		if(bool==false){
+			return;
+		}
+		if(r.parent!=null)
+		{
+			alert("这不是根节点");
+			return;
+		}
+		
+		if(this.id==null)
+		{
+			this.id=this.div.id+"_tb";
+		}
+		if(r.id==null)
+		{
+			r.id=this.id+"_root";
+		}
+		
+		if(checkHaveNode(r))
+		{
+			return;
+		}
+		
+		this.div.innerHTML="<table class='myTreeClass'  id='"+this.id+"' cellpadding=0 cellspacing=0 border=0></table>";
+		this.table=g(this.id);
+		this.root=r;
+		this.root.tree=this;
+		
+		var row=this.table.insertRow(-1);
+		
+		row.id=r.id;
+		var cel=row.insertCell(-1);
+		
+		cel.innerHTML=getImg(this.root)+getCheckBox(this.root)+getShowText(this.root);
+		this.put(this.root);//将节点加到树中，以便遍历
+	}
+	
+	
+	this.getById=function(key) // getNodeById
+	{
+		return this.hash[key];
+	}
+	
+	this.put=function(node)
+	{
+		this.hash[node.id]=node;
+		this.hashKey.add(node.id);
+	}
+	
+	this.rm=function(node)
+	{
+		this.hash[node.id]=null;
+		this.hashKey.rm(node.id);
+	}
+	
+	this.removeNode=function(node) // 核心方法
+	{
+		var temThisNode=this.hash[node.id];
+		if(temThisNode==null)
+		{
+				alert(node.id+" : 不存在于树"+this.id);
+				return;
+		}
+		this.rm(node);
+		if(node.parent==null)
+		{
+			this.div.innerHTML="";
+			MyTrees.rm(this);
+		}else
+		{
+			node.parent.remove(node);
+		}
+	}
+	
+	this.getCheckedNodesXml=function() /// 对外API
+	{
+		var str="<checked>\r\n";
+		var arr=this.getCheckedNodes();
+		
+		if(arr!=null)
+		{
+		
+			for(var i=0;i<arr.length;++i)
+			{
+				var node=arr[i];
+				var s=""
+				if(node.isLeaf())
+				{
+					s+="L";
+				}else
+				{
+					s+="D";
+				}
+				s+=""+node.level;
+				
+				s+=node.id+"\r\n";
+				
+				str+=s;
+			}
+		}
+		str+="</checked>";
+		return str;
+	}
+	
+	this.getCheckedNodes=function() /// 对外API
+	{
+		if(this.root.hasCheckBox==false)
+		{
+			return null;
+		}
+		
+		var arr=new Array();
+		getAtNodes(this.root,arr);
+		var arr2=new Array();
+		if(this.root.isChecked)
+		{
+			arr2[0]=this.root;
+		}
+		for(var i=0;i<arr.length;++i)
+		{
+			if(arr[i].isChecked){
+				arr2[arr2.length]=arr[i];
+			}
+		}
+		return arr2;
+	}
+	
+	this.showText=function()//////对外API
+	{
+		this.showByNumber(0);
+	}
+	
+	this.showId=function()//对外API
+	{
+		this.showByNumber(1);
+	}
+	
+	this.showByNumber=function(num)
+	{
+		var list=this.hashKey;
+		for(var i=0;i<list.size;++i)
+		{
+			var node=this.hash[list.get(i)];
+			g(node.id+"_text").innerHTML=this.getTheElement(node,num);
+		}
+	}
+	
+	this.getTheElement=function(node,show)
+	{
+		var sp="&nbsp;";
+		if(node.hasCheckBox){
+			sp="";
+		}
+		if(show==0)
+		{
+			if(node.text!=null)
+			{
+				return sp+node.text;
+			}else{
+				return sp+node.id;
+			}
+		}else if(show=1)
+		{
+			return sp+node.id;
+		}else
+		{
+			return sp+node.text;
+		}
+	}
+}
+
+function treesHaveDivId(divid)
+{
+	for(var i=0;i<MyTrees.size;i+=1)
+	{
+		var temTree=MyTrees.get(i);
+		if(temTree.div.id==divid)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+
+
+function JsNode(nodeid) //***************************************重点
+{
+	this.xd=0;//在兄弟节点中的位置
+	this.tree=null; //节点所在树
+	this.id=nodeid;// ID
+	this.text=null;// 文本
+	this.parent=null;// 父亲节点
+	this.at=0;//下面的子节点或孙子节点一共有多少个
+	this.nodes=new ArrayList();//@@checked! //********** 儿子节点
+	this.level=0;//深度
+	this.isClosed=false;// 如果节点为文件夹，是否关闭
+	
+	this.hasCheckBox=false;
+	this.isChecked=false;
+	
+	this.isLeaf=function()
+	{
+		return this.nodes.size==0;
+	}
+	
+	this.add=function(node)
+	{
+		try
+		{
+			var bool=checkNode(node);
+			if(bool==false){
+				return;
+			}
+			if(this.tree==null)
+			{
+				alert(this.id+",没在树上面");
+				return;
+			}
+			
+			if(node.id==null)
+			{
+					node.id=this.id+"_"+this.nodes.size;
+			}
+			
+			if(checkHaveNode(node))
+			{
+				return;
+			}
+			node.isChecked=false;//新加入的节点，不能是设置选中状态
+			
+			if(this.nodes.size==0&&this.parent!=null)
+			{
+				changeIcons(this);
+			}
+			
+			node.xd=this.nodes.size;//@@checked! //将当前的node 设置兄弟节点参数
+			node.parent=this;
+			node.hasCheckBox=this.hasCheckBox;
+			if(this.nodes.size==0&&this.isChecked)
+			{
+				node.isChecked=true;
+			}
+			
+			node.tree=this.tree;
+			this.tree.put(node); //将节点加到树中，以便遍历
+			this.nodes.add(node);//@@checked!
+			parentAddSize(node);
+			node.level=this.level+1;
+			
+			var row=node.tree.table.insertRow(g(this.id).rowIndex+this.at);
+				
+			row.id=node.id;
+			var cel=row.insertCell(-1);
+			cel.id=node.id+"_td";
+			cel.innerHTML=getSpace(node)+getBox(node)+getImg(node)+getCheckBox(node)+getShowText(node);
+			if(haveParentIsClosed(node)){ //*********************
+					row.style.display="none";
+			}
+		
+			changeXdBox(node);
+			changeBfXdChildrenSpaceToLine(node);
+		}catch(ex)
+		{alert("JsNode.add>"+ex.message);}
+	}
+	
+	this.remove=function(node)
+	{
+		try
+		{
+			if(node.hasCheckBox&&node.isChecked)
+			{
+				var CheckedCount=0;
+				for(var i=0;i<this.nodes.size;++i)
+				{
+					if(this.nodes.get(i).isChecked)
+					{
+						++CheckedCount;
+					}
+				}
+				
+				if(CheckedCount==1){
+					deleteParentBoxByNode(node);
+				}
+			}
+			deleteChangeLine(node);// 改变上1个兄弟节点，在这个level的间隔图片
+			deleteParentChangeIcon(node);// 如果父亲节点只这个子节点，改变父亲节点的img图片
+			var bg=node.xd;
+			var num=node.at+1;
+			this.at=this.at-num;
+			parentsDelAt(this,num);
+			for(var i=bg+1;i<this.nodes.size;++i)
+			{
+				this.nodes.get(i).xd--;
+			}
+			this.nodes.rm(node);
+			
+			
+			this.tree.table.deleteRow(g(node.id).rowIndex);
+			var arr=new Array();
+			getAtNodes(node,arr);
+			for(var i=0;i<arr.length;++i)
+			{
+				this.tree.rm(arr[i]);
+				this.tree.table.deleteRow(g(arr[i].id).rowIndex);
+			}
+		
+		}catch(ex)
+		{alert("JsNode.remove>"+ex.message);}
+		
+		
+	}
+	
+	
+	//deleteRow
+	
+	
+	this.show=function()
+	{
+		alert(this.id+":"+this.text+":"+this.nodes.size);//@@checked!
+	}
+}
+
+function haveParentIsClosed(node)// 这数是不是有上1级节点为关闭
+{
+	try
+	{
+		var lev=node.level;
+		var p=node;
+		for(var i=0;i<lev;++i)
+		{
+			p=p.parent;
+			if(p.isClosed)
+			{
+				return true;
+			}
+		}
+	
+	}catch(ex)
+	{
+		alert("haveParentIsClosed>"+ex.message);
+	}
+	return false;
+}
+
+function deleteChangeLine(node)
+{
+	var p=node.parent;
+	if(p==null||p.nodes.size==1||node.xd!=p.nodes.size-1)
+	{
+		return ;
+	}
+	var path=node.tree.iconPath;
+	var arr=new Array();
+	var xd=getXd(node);
+	getAtNodes(xd,arr);
+	for(var i=0;i<arr.length;++i)
+	{
+		var temNode=arr[i];
+		g(temNode.id+"_level"+node.level).src=path+"/space.gif";
+	}
+	deleteChangeXdBox_useFordeleteChangeLine(xd);
+}
+
+function deleteParentChangeIcon(node)
+{
+	if(node.parent==null||node.parent.parent==null){
+		return;
+	}
+	
+	if(node.parent.nodes.size==1)
+	{
+		var path=node.tree.iconPath;
+		
+		var p=node.parent;
+		g(p.id+"_img").src=path+"/bookleaf.gif";
+		var pp=p.parent;
+		if(pp.nodes.size-1>p.xd)
+		{
+			g(p.id+"_box").src=path+"/line3.bmp";
+		}else
+		{
+			g(p.id+"_box").src=path+"/line2.bmp";
+		}
+	}
+}
+
+function deleteChangeXdBox_useFordeleteChangeLine(xd)
+{
+	try{
+		var path=xd.tree.iconPath;
+		if(xd.nodes.size==0)
+		{
+			g(xd.id+"_box").src=path+"/line2.bmp";
+		}else{
+			if(xd.isClosed)
+			{
+				g(xd.id+"_box").src=path+"/plus2.bmp";
+			}else
+			{
+				g(xd.id+"_box").src=path+"/minus2.bmp";
+			}
+		}
+	}catch(ex)
+	{
+		alert("deleteChangeXdBox_useFordeleteChangeLine:"+ex.message);
+	}
+}
+
+
+function checkNode(node)
+{
+	if(node==null){
+		alert("node不能为空!");
+		return false;
+	}
+	if(node instanceof JsNode){
+		return true;
+	}
+	alert("node类型不是JsNode!");
+	return false;
+}
+
+
+function parentAddSize(node)// 添加一个节点的时候，所有父亲节点的at (AllAcount)都要加1
+{
+	try{
+		var p=node.parent;
+		if(p==null){
+			return;
+		}
+		p.at++;
+		parentAddSize(p);
+	}catch(ex)
+	{
+		alert("parentAddSize>"+ex.message);
+	}
+}
+
+function parentsDelAt(node,num)
+{
+	try
+	{
+		var p=node.parent;
+		if(p==null){
+			return;
+		}
+		p.at=p.at-num;
+		parentsDelAt(p,num);
+	}catch(ex)
+	{
+		alert("parentsDelAt>"+ex.message);
+	}
+}
+
+function getCheckBox(node)
+{
+//this.hasCheckBox=false;
+	//this.isChecked=false;
+	if(node.hasCheckBox==false)
+	{
+		return "";
+	}
+	
+	var checkString="";
+	if(node.isChecked){
+		checkString=" checked ";
+	}
+	
+	var cboCss=" style='vertical-align: bottom;height:16px;' ";
+	if(node.tree.ieIsFF)
+	{
+		cboCss=" style='vertical-align: bottom;' ";
+	}
+	
+	return "<input "+cboCss+"  type='checkbox' id ='"+node.id+"_cbo' onclick=\"javascript:checkBox_onClick('"+node.id+"','"+node.tree.div.id+"');\"  "+checkString+" />";
+	
+}
+
+function checkBox_onClick(nodeid,divid)
+{
+	var tre=getTreeByDivId(divid);
+	var node=tre.hash[nodeid];
+	var cbo=g(nodeid+"_cbo");
+	if(cbo.checked)
+	{
+		node.isChecked=true;
+		selectBoxByNode(node);//选中节点后，其他节点的改变
+	}else
+	{
+		node.isChecked=false;
+		deleteBoxByNode(node);//节点取消选中，其他节点的改变
+	}
+}
+
+
+function selectBoxByNode(node)//选中节点后，其他节点的改变
+{
+  	var arr=new Array();
+  	getAtNodes(node,arr);
+  	var arr2=new Array();
+  	getAllParentsNodes(node,arr2);
+  	
+  	for(var i=0;i<arr.length;i+=1)
+  	{
+  		var temNode=arr[i];
+  		checkTheBox(temNode,true);
+  	}
+  	for(var i=0;i<arr2.length;i+=1)
+  	{
+  		var temNode=arr2[i];
+  		temNode.isChecked=true;
+  		checkTheBox(temNode,true);
+  	}
+  	
+}
+
+
+function deleteBoxByNode(node)//节点取消选中，其他节点的改变
+{
+	var arr=new Array();
+  	getAtNodes(node,arr);
+  	for(var i=0;i<arr.length;i+=1)
+  	{
+  		var temNode=arr[i];
+  		checkTheBox(temNode,false);
+  	}
+  	
+  	deleteParentBoxByNode(node);
+}
+
+function deleteParentBoxByNode(node)// 取消节点的选中，对于其父亲节点，爷节点的改变
+{
+	if(node.parent==null)
+  	{
+  		return;
+  	}
+  	var p=node.parent;
+  	if(p.isChecked==false)
+  	{
+  		return;
+  	}
+  	
+  	var haveCheckedCbo=false;
+  	for(var i=0;i<p.nodes.size;i+=1)
+  	{
+  		var temp=p.nodes.get(i);
+  		if(temp.id!=node.id)
+  		{
+	  		if(temp.isChecked)
+	  		{
+	  			haveCheckedCbo=true;
+	  			break;
+	  		}
+  		}
+  	}
+  	
+  	if(haveCheckedCbo==false)
+  	{
+  		checkTheBox(p,false);
+  		
+  		deleteParentBoxByNode(p);
+  	}
+}
+
+
+function checkTheBox(node,bool)
+{
+	node.isChecked=bool;
+	g(node.id+"_cbo").checked=bool;
+}
+
+function getShowText(node)
+{
+	var span="<span id='"+node.id+"_text'>";
+	var tex=node.text;
+	if(tex==null)
+	{
+		tex=node.id;
+	}
+	var prix="";
+	if(node.hasCheckBox==false)
+	{
+		prix="&nbsp;";
+	}
+	span=span+prix+tex+"</span>";
+	return span;
+}
+
+function getImg(node)
+{
+	try
+	{
+		var path=node.tree.iconPath;
+		var divid=node.tree.div.id;
+		var id=node.id+"_img";
+		if(node.parent==null)
+		{
+			return "<img style='cursor:hand;' onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/tombs.gif'/>";
+		}
+		if(node.nodes.size==0)//@@checked!
+		{
+			return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/bookleaf.gif'/>";
+		}
+		if(node.nodes.size>0)//@@checked!
+		{
+			if(node.isClosed==false)
+			{
+				return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/books_open.bmp'/>";
+			}else{
+				return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/book.gif'/>";
+			}
+		}
+	}catch(ex)
+	{
+		alert("getImg>"+ex.message);
+	}
+}
+
+function getBox(node)
+{
+	try
+	{
+		if(node.parent==null){
+			return "";
+		}
+		var divid=node.tree.div.id;
+		var path=node.tree.iconPath;
+		var id=node.id+"_box";
+		if(node.nodes.size==0)//@@checked!
+		{
+			if(node.xd==node.parent.nodes.size-1)//@@checked!
+			{
+				return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/line2.bmp'/>";
+			}else
+			{
+				return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/line3.bmp'/>";
+			}
+		}
+		
+		if(node.nodes.size>0)//@@checked!
+		{
+			if(node.isClosed)
+			{
+				if(node.xd==node.parent.nodes.size-1)//@@checked!
+				{
+					return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/plus2.bmp'/>";
+				}else
+				{
+					return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/plus3.bmp'/>";
+				}
+			}else
+			{
+				if(node.xd==node.parent.nodes.size-1)//@@checked!
+				{
+					return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/minus2.bmp'/>";
+				}else
+				{
+					return "<img style='cursor:hand;'  onclick=\"javascript:openOrCloseJs('"+node.id+"','"+divid+"');\" id='"+id+"' src='"+path+"/minus3.bmp'/>";
+				}
+			}
+		}
+	}catch(ex){alert("getBox>"+ex.message);}	
+}
+
+function getSpace(node)// 添加空格
+{
+	try
+	{
+		if(node.parent==null||node.level<2){
+			return "";
+		}
+		
+		var str="";
+		var n=node.parent;
+		for(var i=1;i<node.level;i+=1)
+		{
+			str=Ckl(n,node)+str;
+			n=n.parent;
+		}
+		return str;
+	}catch(ex){alert("getSpace>"+ex.message);}
+}
+
+function changeIcons(node)
+{
+	var img="/books_open.bmp";
+	var box="/minus2.bmp";
+	var nx=getNextXd(node);
+	if(node.isClosed){
+		img="/book.gif";
+		if(nx==null){
+			box="/plus2.bmp";
+		}else
+		{
+			box="/plus3.bmp";
+		}
+	}else{
+		if(nx==null){
+			box="/minus2.bmp";
+		}else
+		{
+			box="/minus3.bmp";
+		}
+	}
+	g(node.id+"_img").src=node.tree.iconPath+img;
+	g(node.id+"_box").src=node.tree.iconPath+box;
+	
+}
+
+function changeBfXdChildrenSpaceToLine(node)
+{
+	var path=node.tree.iconPath;
+	var xd=getXd(node);
+	if(xd==null||xd.at==0){
+		return null;
+	}
+	var arr=new Array();
+	
+	getAtNodes(xd,arr);
+	
+	for(var i=0;i<arr.length;i+=1)
+	{
+		var temNode=arr[i];
+		g(temNode.id+"_level"+node.level).src=path+"/line1.bmp";
+	}
+}
+
+function getAllParentsNodes(node,arr)
+{
+	if(node.parent==null)
+	{
+		return;
+	}
+	var p=node.parent;
+	arr[arr.length]=p;
+	getAllParentsNodes(p,arr);
+}
+
+function getAtNodes(node,arr)
+{
+	if(node.nodes.size==0) //@@checked!
+	{
+		return;
+	}
+	var cd=node.nodes;//@@checked!
+	for(var i=0;i<cd.size;i+=1)
+	{
+		arr[arr.length]=cd.get(i);//@@checked!
+		
+		if(cd.get(i).nodes.size>0)//@@checked!
+		{
+			getAtNodes(cd.get(i),arr);//@@checked!
+		}
+	}
+}
+
+function changeXdBox(node)
+{
+	var path=node.tree.iconPath;
+	
+	var bf=getXd(node);
+	if(bf==null){
+		return;
+	}
+	
+	if(bf.nodes.size==0) // @@checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	{
+		g(bf.id+"_box").src=path+"/line3.bmp";
+	}else
+	{
+			if(bf.isClosed)
+			{
+				g(bf.id+"_box").src=path+"/plus3.bmp";
+			}else
+			{
+				g(bf.id+"_box").src=path+"/minus3.bmp";
+			}
+	}
+}
+
+function getXd(node)// 得到上1个兄弟
+{
+	if(node.parent!=null&&node.xd!=0)
+	{
+		return node.parent.nodes.get(node.xd-1); // @@checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	return null;
+}
+
+
+function getNextXd(node)
+{
+	if(node.parent!=null&&node.xd!=node.parent.nodes.size-1) // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	{
+		return node.parent.nodes.get(node.xd+1); // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	return null;
+}
+
+
+function getInnerHTML(node)
+{
+	
+}
+
+function Ls(node)
+{
+	var path=node.tree.iconPath;
+	return "<img src='"+path+"/space.gif'/>";
+}
+
+function Ckl(node,idNode) //获得idNode节点，在node深度的 图像
+{
+	var path=node.tree.iconPath;
+	if(node.xd==node.parent.nodes.size-1) //@@checked!
+	{
+		return "<img id='"+idNode.id+"_level"+node.level+"' src='"+path+"/space.gif'/>";
+	}
+	return "<img id='"+idNode.id+"_level"+node.level+"' src='"+path+"/line1.bmp'/>";
+}
+
+function closeNode(node)
+{
+	closeOrOpen(node,"/book.gif","/plus2.bmp","/plus3.bmp");
+	showOrHiddenNodes(node,true);
+}
+
+function openNode(node)
+{
+	closeOrOpen(node,"/books_open.bmp","/minus2.bmp","/minus3.bmp");
+	if(haveParentIsClosed(node)){
+		node.isClosed=false;
+	}else
+	{
+		showOrHiddenNodes(node,false);
+	}
+}
+
+
+function closeOrOpen(node,img1,img2,img3)
+{
+	var path=node.tree.iconPath;
+	if(node.nodes.size==0){ // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		return;
+	}
+	if(node.parent==null)
+	{
+		node.isClosed=!node.isClosed;
+		return;
+	}
+	
+	node.isClosed=!node.isClosed;
+	g(node.id+"_img").src=node.tree.iconPath+img1;
+	var nx=getNextXd(node);
+	if(nx==null)
+	{
+		g(node.id+"_box").src=node.tree.iconPath+img2;
+	}else
+	{
+		g(node.id+"_box").src=node.tree.iconPath+img3;
+	}
+}
+
+function showOrHiddenNodes(node,hide)
+{
+	if(node.nodes.size==0) // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	{
+		return;
+	}
+	for(var i=0;i<node.nodes.size;++i) // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	{
+		var cn=node.nodes.get(i); // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		showOrHidden(cn,hide);
+		if(cn.nodes.size>0) // checked!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		{
+			
+			if(cn.isClosed==false&&hide==false)
+			{
+				showOrHiddenNodes(cn,hide);
+			}else if(hide==true)
+			{
+				showOrHiddenNodes(cn,hide);
+			}
+
+		}
+	}
+}
+
+function showOrHidden(node,hide)
+{
+	var tr=g(node.id);
+	if(hide==true){
+		tr.style.display='none';
+	}else{
+		tr.style.display="block";
+	}
+}
+
+
+function openOrCloseJs(sid,divid)
+{
+	var tree=getTreeByDivId(divid);
+	var node=tree.getById(sid);
+	if(node.isClosed)
+	{
+		openNode(node);
+	}else
+	{
+		closeNode(node);
+	}
+}
+
+function checkHaveNode(node)
+{
+	for(var i=0;i<MyTrees.size;i+=1)
+	{
+		var tr=MyTrees.get(i);
+		var tem=tr.hash[node.id];
+		if(tem!=null)
+		{
+			alert("已经存在节点"+node.id);
+			return true;
+		}
+	}
+	return false;
+}
+
+

@@ -1,0 +1,7 @@
+/*  scrollTab */
+#scrollTab{width:100%;border-collapse:collapse;margin:1em 0; border:1px solid #a0bba0;}
+#scrollTab th, #scrollTab td{text-align:center;padding:.5em;border:1px solid #fff;}
+#scrollTab th{background:#449145 url(tr_back.gif) repeat-x;color:#fff;}
+#scrollTab td{background:#e5f1f4;}
+#scrollTab tr.even td{background:#e7f1e7;}
+#scrollTab tr.odd td{background:#f8fbfc;}

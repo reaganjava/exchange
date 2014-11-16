@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+	<!-- 处理配置 -->
+	<processes>
+		<!-- 使用数据库的类名，写节点，读节点，是否使用缓存，写函数，读函数 -->
+		<process 
+			class="com.mopon.data.dao.impl.TestDaoImpl" >
+			<!-- 单独的函数配置 -->
+			<method node="MASTER" name="save"/>
+			<method node="SLAVE1"  name="query"/>
+			<method node="SLAVE2"  name="load"/>
+			<method node="SLAVE3"  name="query" />
+			<method node="SLAVE4"  name="query" />
+		</process>
+	</processes>
+</data>
